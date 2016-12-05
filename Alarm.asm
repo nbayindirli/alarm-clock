@@ -234,8 +234,13 @@ SetAlarmISR:
 
 			xor.b	#BIT0, &alarmOn							; Toggles on alarm
 			xor.b	#debugLED, &P1OUT
-			;cmp.w	#0, &alarmOn							; Check if alarm is on
+			cmp.w	#0, &alarmOn							; Check if alarm is on
+			jeq		AlarmOff
 			call	#FindTimeTillAlarm
+			call	#StartAlarmTimer
+
+AlarmOff:
+
 			bic.b	#button, &P1IFG
 
 			reti
