@@ -167,7 +167,6 @@ FindTimeTillAlarm:
 			call	#MultBy60
 			pop.w	R7
 			add.w	R7, R8
-			mov.w	R8, &timeTillAlarm
 
 			mov.w	&alarm, R9
 			push.w	&alarm+2
@@ -180,7 +179,9 @@ FindTimeTillAlarm:
 			call	#MultBy60
 			pop.w	R7
 			add.w	R7, R9
-			mov.w	R9, &timeTillAlarm+2
+
+			sub.w	R9, R8
+			mov.w	R8, &timeTillAlarm
 
 			ret
 
