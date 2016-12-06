@@ -61,7 +61,7 @@ button:		.set	BIT3
 			bis.b	#button, &P1REN
 			bis.b	#button, &P1OUT
 
-			bic.b	&button,P1IFG
+			bic.b	&button, P1IFG
 
 			; Set up LEDS
 			bic.b	#debugLED, &P1SEL
@@ -180,8 +180,8 @@ FindTimeTillAlarm:
 			pop.w	R7
 			add.w	R7, R9
 
-			sub.w	R9, R8
-			mov.w	R8, &timeTillAlarm
+			sub.w	R8, R9
+			mov.w	R9, &timeTillAlarm
 
 			ret
 
@@ -238,24 +238,30 @@ SetAlarmISR:
 			jeq		AlarmOff
 			call	#FindTimeTillAlarm
 			call	#StartAlarmTimer
+			mov.w	&timeTillAlarm, &TA0CCR0
+			jmp		End
 
 AlarmOff:
+			bic.b	#alarmLED, &P1OUT
+			call	#StopPWMTimer
 
+End:
 			bic.b	#button, &P1IFG
 
 			reti
 
 ; TA1CCR0 ISR
 ClockTickTimerISR:
-			xor.b	#debugPin, &P1OUT						; Toggle debug pin
+			xor.b	#BIT1, &P1OUT
 
 			; Update PWM duty cycle
 			cmp.w	&TA0CCR1, &upperDC						; update PWM duty cycle
 			jl		endPWM
 			add.w	&step, &TACCR1
 
-			; in class
-			bic.w	#LPM1, 0(SP)
+			bic.b	#LPM1, 0(SP)							;
+
+			xor.b	#debugPin, &P1OUT						; Toggle debug pin
 
 			reti
 
@@ -268,6 +274,10 @@ endPWM:
 ; TA0CCR0 ISR
 DownCntISR:
 			; Downcount to alarm time routine starts here
+
+			mov.w	#timeTillAlarm, &TA0CCR0
+
+			call	#StartPWMTimer
 
 			; -------------------------------------------
 			reti
